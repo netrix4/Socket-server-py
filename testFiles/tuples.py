@@ -1,0 +1,11 @@
+list_of_tuples = [("z","A", 1), ("x","B", 2), ("v","C", 3)]
+
+for index,tupleItem in enumerate(list_of_tuples):
+    list_of_tuples[index] = (tupleItem[1], tupleItem[2])
+print(f"List of tuples edited\n{list_of_tuples}")
+
+# Check if the tuple ("B", 2) is in the list
+if ("B", 2) in list_of_tuples:
+    print("The tuple ('B', 2) is in the list.")
+else:
+    print("The tuple ('B', 2) is not in the list.")

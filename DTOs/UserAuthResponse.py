@@ -1,4 +1,7 @@
 class UserAuthResponse:
+    status:int
+    message:str
+    user_id:int
     def __init__(self, status, message, user_id):
         self.status = status
         self.message = message

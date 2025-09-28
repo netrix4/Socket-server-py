@@ -10,21 +10,20 @@ PORT = 555
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     print(f"Conectado al servidor en {HOST}:{PORT}")
-    message = input('Usuario: ')
+    message = input('Ingresa tu usuario: ')
     s.sendall(message.encode('utf-8'))
 
     response = s.recv(1824).decode('utf-8')
-    print(response)
-
     response = json.loads(response)
+    newResponse = UserAuthResponse(status=response["status"], message=response["message"], user_id=["user_id"])
 
-    print(f'Recibido del servidor: {response["message"]}')
-    while response["status"] == 200:
+    print(f'Mensaje recibido del servidor: {newResponse.message}')
+    while newResponse.status == 200:
       command = input("Dame un comando a mandar:")
       s.sendall(command.encode('utf-8'))
       if command == 'quit':
         print('cerrado localmente')
-        response == ''
+        newResponse = UserAuthResponse(message='', status=0, user_id=0)
         s.close()
         break
       else:
@@ -32,5 +31,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
          print(f"Esta fue la salida de tu comando:\n{command_output_response}")
     print('Parece que se cerro la conexion')
     s.close()
-
-# print(f"Recibido del servidor: {data.decode('utf-8')}")
