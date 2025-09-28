@@ -22,6 +22,7 @@ def setup_socket(socketServer):
   socketServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   socketServer.bind((HOST, PORT))
   socketServer.listen(2)
+  # socketServer.setblocking(False)
   print(f"Servidor escuchando en {HOST}:{PORT}")
   return socketServer.accept()  
 
@@ -31,6 +32,7 @@ def start_server():
   # while True:
       # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+
     conn, addr = setup_socket(s)
 
     with conn:
