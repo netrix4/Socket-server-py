@@ -10,64 +10,73 @@ HOST = '192.168.100.79'
 PORT = 555
 
 SQLiteConnection = SQLiteProvider('SocketUsers.db')
-fixed_users=[{'username':'badass420'},{'username':'mario123'}]
 
-isallowedconnection = True
+def get_is_valid_user(userToLoginAsTuple)->UserAuthResponse:
+  return SQLiteProvider.isValidUser(self=SQLiteConnection, user=userToLoginAsTuple)
+
+def translate_client_response(userToLogin):
+  userToLoginAsJSON = json.loads(userToLogin.decode('utf-8'))
+  return (userToLoginAsJSON["username"], userToLoginAsJSON["password"])
+
+def setup_socket(socketServer):
+  socketServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+  socketServer.bind((HOST, PORT))
+  socketServer.listen(2)
+  print(f"Servidor escuchando en {HOST}:{PORT}")
+  return socketServer.accept()  
 
 
-def get_is_valid_user(user_input)->UserAuthResponse:
-    return SQLiteProvider.getUserDataByUsername(self=SQLiteConnection, username=user_input)
+def start_server():
+  isallowedconnection = True
+  # while True:
+      # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    conn, addr = setup_socket(s)
 
-# while True:
-    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((HOST, PORT))
-    s.listen(5)
-    print(f"Servidor escuchando en {HOST}:{PORT}")
-
-    conn, addr = s.accept()
     with conn:
-        entered_username = conn.recv(1024).decode('utf-8')
-        user_validation_response = get_is_valid_user(entered_username)
+      user_credentials = translate_client_response(conn.recv(1024))
+      user_validation_response = get_is_valid_user(user_credentials)
 
-        if user_validation_response.status == 200:
-            print(f'Bienvenido, {entered_username}')
-            print(f"Conectado por {addr}")
+      if user_validation_response.status == 200:
+        print(f'Bienvenido, {user_credentials[0]}')
+        print(f"Conectado por {addr}")
 
-            conn.sendall(json.dumps(user_validation_response.to_dict()).encode('utf-8'))
+        conn.sendall(json.dumps(user_validation_response.to_dict()).encode('utf-8'))
 
-            print('Escuchando clientes...')
+        print('Escuchando clientes...')
 
-            while isallowedconnection:
-                data = conn.recv(1024).decode('utf-8')
-                if not data:
-                    print('Creo que aqui se cierra cuando el host se desconecta')
-                    conn.close()
-                    break
+        while isallowedconnection:
+          data = conn.recv(1024).decode('utf-8')
+          if not data:
+            print('Creo que aqui se cierra cuando el host se desconecta')
+            conn.close()
+            break
+          else:
+            if data == 'quit':
+              print('Cerrando conexion por peticion del cliente')
+              conn.close()
+              isallowedconnection = not isallowedconnection
+              break
+            else:
+              print(f'Comando a ejecutar: -> {data} <-')
+              try:
+                output = os.popen(data).read()
+                if output:
+                  conn.sendall(output.encode('utf-8'))
                 else:
-                    if data == 'quit':
-                        print('Cerrando conexion por peticion del cliente')
-                        conn.close()
-                        isallowedconnection = not isallowedconnection
-                        break
-                    else:
-                        print(f'Comando a ejecutar: -> {data} <-')
-                        try:
-                            output = os.popen(data).read()
-                            if output:
-                                conn.sendall(output.encode('utf-8'))
-                            else:
-                                conn.sendall(b"-- Comando sin salida --")
-                        except Exception as e:
-                            conn.sendall(f"Error: {e}".encode('utf-8'))
+                  conn.sendall(b"-- Comando sin salida --")
+              except Exception as e:
+                  conn.sendall(f"Error: {e}".encode('utf-8'))
 
-        else:
-            # ToDo: Ask for create new user
-            user_validation_response = json.dumps(user_validation_response.to_dict())
-            print('Parece que tu usuario no existe', user_validation_response)
-            conn.sendall(user_validation_response.encode('utf-8'))
+      else:
+        # ToDo: Ask for create new user
+        user_validation_response = json.dumps(user_validation_response.to_dict())
+        print('Parece que tu usuario no existe', user_validation_response)
+        conn.sendall(user_validation_response.encode('utf-8'))
 
-        conn.close()
+      conn.close()
     conn.close()
     # break
+
+if __name__ == '__main__':
+  start_server()
