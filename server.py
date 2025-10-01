@@ -6,6 +6,7 @@ from service.SQLiteProvider import SQLiteProvider
 
 # HOST = '192.168.0.190'
 # HOST = '0.0.0.0'
+CHARFORMAT = 'utf-8'
 HOST = '192.168.100.79'
 PORT = 555
 
@@ -15,7 +16,7 @@ def get_is_valid_user(userToLoginAsTuple)->UserAuthResponse:
   return SQLiteProvider.isValidUser(self=SQLiteConnection, user=userToLoginAsTuple)
 
 def translate_client_response(userToLogin):
-  userToLoginAsJSON = json.loads(userToLogin.decode('utf-8'))
+  userToLoginAsJSON = json.loads(userToLogin.decode(CHARFORMAT))
   return (userToLoginAsJSON["username"], userToLoginAsJSON["password"])
 
 def setup_socket(socketServer):
@@ -43,12 +44,12 @@ def start_server():
         print(f'Bienvenido, {user_credentials[0]}')
         print(f"Conectado por {addr}")
 
-        conn.sendall(json.dumps(user_validation_response.to_dict()).encode('utf-8'))
+        conn.sendall(json.dumps(user_validation_response.to_dict()).encode(CHARFORMAT))
 
         print('Escuchando clientes...')
 
         while isallowedconnection:
-          data = conn.recv(1024).decode('utf-8')
+          data = conn.recv(1024).decode(CHARFORMAT)
           if not data:
             print('Creo que aqui se cierra cuando el host se desconecta')
             conn.close()
@@ -64,17 +65,17 @@ def start_server():
               try:
                 output = os.popen(data).read()
                 if output:
-                  conn.sendall(output.encode('utf-8'))
+                  conn.sendall(output.encode(CHARFORMAT))
                 else:
                   conn.sendall(b"-- Comando sin salida --")
               except Exception as e:
-                  conn.sendall(f"Error: {e}".encode('utf-8'))
+                  conn.sendall(f"Error: {e}".encode(CHARFORMAT))
 
       else:
         # ToDo: Ask for create new user
         user_validation_response = json.dumps(user_validation_response.to_dict())
         print('Parece que tu usuario no existe', user_validation_response)
-        conn.sendall(user_validation_response.encode('utf-8'))
+        conn.sendall(user_validation_response.encode(CHARFORMAT))
 
       conn.close()
     conn.close()

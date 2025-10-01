@@ -4,6 +4,7 @@ from DTOs.UserAuthResponse import UserAuthResponse
 
 # HOST = '192.168.0.190'
 # HOST = '0.0.0.0'
+CHARFORMAT = 'utf-8'
 HOST = '192.168.100.79'
 PORT = 555
 
@@ -14,7 +15,7 @@ def read_credentials()->str:
   return json.dumps({'username':username, 'password':passWord})
 
 def translate_server_response(user_response) -> UserAuthResponse:
-  response = json.loads(user_response.decode('utf-8'))
+  response = json.loads(user_response.decode(CHARFORMAT))
 
   return UserAuthResponse(status=response["status"], 
                           message=response["message"],
@@ -26,7 +27,7 @@ def start_client():
     print(f"Conectado al servidor en {HOST}:{PORT}")
 
     json_stringed = read_credentials()
-    s.sendall(json_stringed.encode('utf-8'))
+    s.sendall(json_stringed.encode(CHARFORMAT))
 
     binary_user_response = s.recv(1824)
     newUserAuthResponse = translate_server_response(binary_user_response)
@@ -35,7 +36,7 @@ def start_client():
 
     while newUserAuthResponse.status == 200:
       command = input("Dame un comando a mandar:")
-      s.sendall(command.encode('utf-8'))
+      s.sendall(command.encode(CHARFORMAT))
 
       if command == 'quit':
         print('cerrado localmente')
@@ -43,7 +44,7 @@ def start_client():
         s.close()
         break
       else:
-        command_output_response = s.recv(1024).decode('utf-8')
+        command_output_response = s.recv(1024).decode(CHARFORMAT)
         print(f"Esta fue la salida de tu comando:\n{command_output_response}")
     print('Parece que se cerro la conexion')
     s.close()
