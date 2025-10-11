@@ -7,7 +7,7 @@ from service.SQLiteProvider import SQLiteProvider
 # HOST = '192.168.0.190'
 # HOST = '0.0.0.0'
 CHARFORMAT = 'utf-8'
-HOST = '192.168.0.226'
+HOST = '192.168.0.124'
 PORT = 555
 
 SQLiteConnection = SQLiteProvider('SocketUsers.db')
