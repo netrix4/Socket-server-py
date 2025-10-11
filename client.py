@@ -6,7 +6,7 @@ from DTOs.UserAuthResponse import UserAuthResponse
 # HOST = '0.0.0.0'
 
 CHARFORMAT = 'utf-8'
-HOST = '192.168.0.226'
+HOST = '192.168.0.124'
 PORT = 555
 
 def read_credentials()->str:
